@@ -6,23 +6,26 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
+import androidx.lifecycle.Lifecycle;
+import androidx.lifecycle.LifecycleOwner;
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.Observer;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.db_app.Data.AppDatabase;
-import com.example.db_app.Data.User;
+import com.example.db_app.Data.Note;
 import com.example.db_app.R;
 
 import java.util.ArrayList;
 
 public class MyAdapter extends RecyclerView.Adapter<MyViewHolder> {
 
-    Context context;
-
-    private ArrayList<User> items;
-    AppDatabase appDatabase;
+    private Context context;
+    private ArrayList<Note> items;
+    private AppDatabase appDatabase;
 
     private OnItemClickListener listener;
-    public MyAdapter(Context context, OnItemClickListener listener) {
+    public MyAdapter(Context context,OnItemClickListener listener) {
         this.context = context;
         this.appDatabase = AppDatabase.getDB(context);
         showNotes();
@@ -30,11 +33,11 @@ public class MyAdapter extends RecyclerView.Adapter<MyViewHolder> {
     }
 
     public interface OnItemClickListener {
-        void onItemClick(int position, User user);
+        void onItemClick(int position, Note note);
     }
 
     public void showNotes(){
-        items = (ArrayList<User>) appDatabase.userDao().getAllRecords();
+        items = (ArrayList<Note>) appDatabase.noteDao().getAllRecords();
     }
     @NonNull
     @Override
@@ -50,7 +53,7 @@ public class MyAdapter extends RecyclerView.Adapter<MyViewHolder> {
     @Override
     public void onBindViewHolder(@NonNull MyViewHolder holder, int position) {
 
-        holder.tittle.setText(items.get(position).tittle);
+        holder.tittle.setText(items.get(position).getTittle());
         holder.content.setText(items.get(position).content);
 
         //Deleting Data
@@ -58,12 +61,11 @@ public class MyAdapter extends RecyclerView.Adapter<MyViewHolder> {
             @Override
             public void onClick(View view) {
 
-                appDatabase.userDao().deleteRecord(new User(items.get(position).getId()
+                appDatabase.noteDao().deleteRecord(new Note(items.get(position).getId()
                         ,items.get(position).getTittle()
                 ,items.get(position).getContent()));
 
                 showNotes();
-
                 notifyDataSetChanged();
             }
         });
@@ -73,7 +75,7 @@ public class MyAdapter extends RecyclerView.Adapter<MyViewHolder> {
             @Override
             public void onClick(View view) {
 
-                listener.onItemClick(position, new User(items.get(position).getId()
+                listener.onItemClick(position, new Note(items.get(position).getId()
                         ,items.get(position).getTittle()
                         ,items.get(position).getContent()));
             }
@@ -83,8 +85,6 @@ public class MyAdapter extends RecyclerView.Adapter<MyViewHolder> {
     public int getItemCount() {
         return items.size();
     }
-
-
 
 }
 

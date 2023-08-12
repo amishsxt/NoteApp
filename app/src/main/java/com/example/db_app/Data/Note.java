@@ -8,7 +8,7 @@ import androidx.room.PrimaryKey;
 import java.io.Serializable;
 
 @Entity
-public class User implements Serializable {
+public class Note implements Serializable {
     @PrimaryKey (autoGenerate = true)
     public int id;
 
@@ -18,16 +18,16 @@ public class User implements Serializable {
     @ColumnInfo(name="Content")
     public String content;
     @Ignore
-    public User(int id, String tittle, String content) {
+    public Note(int id, String tittle, String content) {
         this.id = id;
         this.tittle = tittle;
         this.content = content;
     }
-    public User(String tittle, String content) {
+    public Note(String tittle, String content) {
         this.tittle = tittle;
         this.content = content;
     }
-    public User(){
+    public Note(){
 
     }
     public int getId() {

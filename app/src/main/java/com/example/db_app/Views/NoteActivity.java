@@ -9,15 +9,16 @@ import android.widget.EditText;
 import android.widget.ImageView;
 
 import com.example.db_app.Data.AppDatabase;
-import com.example.db_app.Data.User;
+import com.example.db_app.Data.Note;
 import com.example.db_app.R;
 
 public class NoteActivity extends AppCompatActivity {
     EditText tittle,content;
 
-    ImageView  back;
-    AppDatabase appDatabase;
-    User user;
+    private ImageView  back;
+    private AppDatabase appDatabase;
+    private Note note;
+    private int check;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,43 +35,34 @@ public class NoteActivity extends AppCompatActivity {
         back =  findViewById(R.id.back_btn);
 
         //Checking intent
-        int check = getIntent().getIntExtra("check", 0);
+        check = getIntent().getIntExtra("check", 0);
 
         if(check==1) {
-            user = (User) getIntent().getSerializableExtra("user");
+            note = (Note) getIntent().getSerializableExtra("note");
 
-            tittle.setText(user.tittle);
-            content.setText(user.content);
+            tittle.setText(note.tittle);
+            content.setText(note.content);
         }
+
 
         //Navigation back to First Activity
         back.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
 
-                if(check==1){
-                    user = (User) getIntent().getSerializableExtra("user");
-                    //Checking if empty
-                    if(tittle.getText().toString().trim().length() > 0 ||
-                            content.getText().toString().trim().length() > 0 ){
-
-                        UpdateNode(user,appDatabase);
-                    }
-                    else {
-
-                        DeleteNote(user,appDatabase);
-                    }
-                }
-                else {
-
-                    CreateNode(appDatabase);
-                }
-
+                takeAction();
             }
         });
     }
 
-    private void CreateNode(AppDatabase appDatabase){
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+
+        takeAction();
+    }
+
+    private void createNode(AppDatabase appDatabase){
 
         //Checking if any data field is empty
 
@@ -78,21 +70,21 @@ public class NoteActivity extends AppCompatActivity {
                 content.getText().toString().trim().length() > 0 )
         {
             //Insert Data
-            appDatabase.userDao().insertRecord(new User(tittle.getText().toString(), content.getText().toString()));
+            appDatabase.noteDao().insertRecord(new Note(tittle.getText().toString(), content.getText().toString()));
         }
         else if( tittle.getText().toString().trim().length() > 0 &&
                 content.getText().toString().trim().length() < 1 )
         {
-            User user = new User();
-            user.setTittle(tittle.getText().toString());
-            appDatabase.userDao().insertRecord(user);
+            Note note = new Note();
+            note.setTittle(tittle.getText().toString());
+            appDatabase.noteDao().insertRecord(note);
         }
         else if (tittle.getText().toString().trim().length() < 1 &&
                 content.getText().toString().trim().length() > 0)
         {
-            User user = new User();
-            user.setContent(content.getText().toString());
-            appDatabase.userDao().insertRecord(user);
+            Note note = new Note();
+            note.setContent(content.getText().toString());
+            appDatabase.noteDao().insertRecord(note);
         }
 
         Intent intent = new Intent(NoteActivity.this,MainActivity.class);
@@ -102,10 +94,10 @@ public class NoteActivity extends AppCompatActivity {
 
     }
 
-    private void DeleteNote(User user,AppDatabase appDatabase){
+    private void deleteNote(Note note, AppDatabase appDatabase){
 
         //Deleting data
-        appDatabase.userDao().deleteRecord(new User(user.getId(), user.getTittle(), user.getContent()));
+        appDatabase.noteDao().deleteRecord(new Note(note.getId(), note.getTittle(), note.getContent()));
 
         Intent intent = new Intent(NoteActivity.this,MainActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -113,10 +105,10 @@ public class NoteActivity extends AppCompatActivity {
         finish();
     }
 
-    private void UpdateNode(User user,AppDatabase appDatabase){
+    private void updateNode(Note note, AppDatabase appDatabase){
 
         //Updating data
-        appDatabase.userDao().updateRecord(new User(user.getId(), tittle.getText().toString(), content.getText().toString()));
+        appDatabase.noteDao().updateRecord(new Note(note.getId(), tittle.getText().toString(), content.getText().toString()));
 
         Intent intent = new Intent(NoteActivity.this,MainActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -124,4 +116,23 @@ public class NoteActivity extends AppCompatActivity {
         finish();
     }
 
+    private void takeAction(){
+        if(check==1){
+            note = (Note) getIntent().getSerializableExtra("note");
+            //Checking if empty
+            if(tittle.getText().toString().trim().length() > 0 ||
+                    content.getText().toString().trim().length() > 0 ){
+
+                updateNode(note,appDatabase);
+            }
+            else {
+
+                deleteNote(note,appDatabase);
+            }
+        }
+        else {
+
+            createNode(appDatabase);
+        }
+    }
 }
